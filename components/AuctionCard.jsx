@@ -89,74 +89,76 @@ const AuctionCard = ({ auction }) => {
 
     return (
         <>
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden border border-white/20 hover:border-white/40 transition-all duration-300">
-                <div className="relative h-48 group">
-                    <Image
-                        src={getImageUrl(auction.image)}
-                        alt={auction.name || 'Auction item'}
-                        layout="fill"
-                        objectFit="cover"
-                        className="transition-transform duration-300 group-hover:scale-105"
-                        onError={(e) => {
-                            e.target.src = '/default-auction.jpg';
-                        }}
-                        unoptimized={true}
-                    />
-                    {isOwner && (
-                        <button
-                            onClick={() => setShowDeleteModal(true)}
-                            className="absolute top-2 right-2 p-2 bg-red-500/80 hover:bg-red-600 rounded-full text-white transition-all duration-200"
-                        >
-                            <FiTrash2 size={18} />
-                        </button>
-                    )}
-                </div>
-                <div className="p-6">
-                    <h3 className="text-xl font-bold text-white mb-2">{auction.name}</h3>
-                    <p className="text-gray-400 mb-2">Hosted by: {auction.ownerName || 'Anonymous'}</p>
-                    <p className="text-gray-400 mb-4">{auction.description}</p>
-
-                    <div className="flex items-center space-x-4 mb-4">
-                        <div className="flex items-center text-blue-400">
-                            <FiDollarSign className="mr-1" />
-                            <span>Start: ${formatPrice(auction.startingBid)}</span>
-                        </div>
-                        <div className="flex items-center text-green-400">
-                            <FiDollarSign className="mr-1" />
-                            <span>Current: ${formatPrice(auction.currentBid)}</span>
-                        </div>
-                        <div className="flex items-center text-purple-400">
-                            <FiClock className="mr-1" />
-                            <span>{new Date(auction.endDate).toLocaleDateString()}</span>
-                        </div>
-                    </div>
-
-                    <form onSubmit={handleBid} className="space-y-3">
-                        <div className="flex space-x-2">
-                            <input
-                                type="number"
-                                value={bidAmount}
-                                onChange={(e) => setBidAmount(e.target.value)}
-                                placeholder="Enter bid amount"
-                                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-                                min={auction.currentBid + 1}
-                                step="0.01"
-                                required
-                            />
+            <BackgroundGradient className="rounded-xl p-[1px] overflow-hidden">
+                <div className="relative h-full bg-black rounded-xl overflow-hidden">
+                    <div className="relative h-48 group">
+                        <Image
+                            src={getImageUrl(auction.image)}
+                            alt={auction.name || 'Auction item'}
+                            layout="fill"
+                            objectFit="cover"
+                            className="transition-transform duration-300 group-hover:scale-105"
+                            onError={(e) => {
+                                e.target.src = '/default-auction.jpg';
+                            }}
+                            unoptimized={true}
+                        />
+                        {isOwner && (
                             <button
-                                type="submit"
-                                disabled={isLoading}
-                                className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 disabled:opacity-50"
+                                onClick={() => setShowDeleteModal(true)}
+                                className="absolute top-2 right-2 p-2 bg-red-500/80 hover:bg-red-600 rounded-full text-white transition-all duration-200"
                             >
-                                {isLoading ? 'Bidding...' : 'Place Bid'}
+                                <FiTrash2 size={18} />
                             </button>
-                        </div>
-                        {error && (
-                            <p className="text-red-400 text-sm">{error}</p>
                         )}
-                    </form>
+                    </div>
+                    <div className="p-6">
+                        <h3 className="text-xl font-bold text-white mb-2">{auction.name}</h3>
+                        <p className="text-gray-400 mb-2">Hosted by: {auction.ownerName || 'Anonymous'}</p>
+                        <p className="text-gray-400 mb-4">{auction.description}</p>
+
+                        <div className="flex items-center space-x-4 mb-4">
+                            <div className="flex items-center text-blue-400">
+                                <FiDollarSign className="mr-1" />
+                                <span>Start: ${formatPrice(auction.startingBid)}</span>
+                            </div>
+                            <div className="flex items-center text-green-400">
+                                <FiDollarSign className="mr-1" />
+                                <span>Current: ${formatPrice(auction.currentBid)}</span>
+                            </div>
+                            <div className="flex items-center text-purple-400">
+                                <FiClock className="mr-1" />
+                                <span>{new Date(auction.endDate).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleBid} className="space-y-3">
+                            <div className="flex space-x-2">
+                                <input
+                                    type="number"
+                                    value={bidAmount}
+                                    onChange={(e) => setBidAmount(e.target.value)}
+                                    placeholder="Enter bid amount"
+                                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                                    min={auction.currentBid + 1}
+                                    step="0.01"
+                                    required
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 disabled:opacity-50"
+                                >
+                                    {isLoading ? 'Bidding...' : 'Place Bid'}
+                                </button>
+                            </div>
+                            {error && (
+                                <p className="text-red-400 text-sm">{error}</p>
+                            )}
+                        </form>
+                    </div>
                 </div>
-            </div>
+            </BackgroundGradient>
             <DeleteModal
                 isOpen={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}
