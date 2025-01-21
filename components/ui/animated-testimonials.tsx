@@ -80,7 +80,7 @@ export const AnimatedTestimonials = ({
                                         fill
                                         className="object-cover"
                                         sizes="(max-width: 768px) 100vw, 50vw"
-                                        loading="lazy"
+                                        priority={true}
                                         quality={75}
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/0" />
