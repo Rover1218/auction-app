@@ -19,6 +19,20 @@ const AuctionCard = ({ auction }) => {
         setError('');
         setIsLoading(true);
 
+        // Validate bid amount
+        const bidValue = parseFloat(bidAmount);
+        if (isNaN(bidValue)) {
+            setError('Please enter a valid number');
+            setIsLoading(false);
+            return;
+        }
+
+        if (bidValue <= auction.currentBid) {
+            setError('Bid must be higher than current bid');
+            setIsLoading(false);
+            return;
+        }
+
         try {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -32,17 +46,20 @@ const AuctionCard = ({ auction }) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ amount: parseFloat(bidAmount) })
+                body: JSON.stringify({ amount: bidValue })
             });
 
+            const data = await res.json();
+
             if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.message);
+                throw new Error(data.message || 'Failed to place bid');
             }
 
+            // Clear bid amount and refresh page on success
+            setBidAmount('');
             router.reload();
         } catch (err) {
-            setError(err.message);
+            setError(err.message || 'Failed to place bid');
         } finally {
             setIsLoading(false);
         }
@@ -89,8 +106,8 @@ const AuctionCard = ({ auction }) => {
 
     return (
         <>
-            <BackgroundGradient className="rounded-xl p-[1px] overflow-hidden">
-                <div className="relative h-full bg-black rounded-xl overflow-hidden">
+            <BackgroundGradient className="rounded-[22px] p-[1px] overflow-hidden bg-black/50">
+                <div className="relative h-full bg-black rounded-[21px] overflow-hidden">
                     <div className="relative h-48 group">
                         <Image
                             src={getImageUrl(auction.image)}
@@ -132,30 +149,36 @@ const AuctionCard = ({ auction }) => {
                             </div>
                         </div>
 
-                        <form onSubmit={handleBid} className="space-y-3">
-                            <div className="flex space-x-2">
-                                <input
-                                    type="number"
-                                    value={bidAmount}
-                                    onChange={(e) => setBidAmount(e.target.value)}
-                                    placeholder="Enter bid amount"
-                                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-                                    min={auction.currentBid + 1}
-                                    step="0.01"
-                                    required
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 disabled:opacity-50"
-                                >
-                                    {isLoading ? 'Bidding...' : 'Place Bid'}
-                                </button>
+                        {!isOwner && new Date(auction.endDate) > new Date() ? (
+                            <form onSubmit={handleBid} className="space-y-3">
+                                <div className="flex space-x-2">
+                                    <input
+                                        type="number"
+                                        value={bidAmount}
+                                        onChange={(e) => setBidAmount(e.target.value)}
+                                        placeholder={`Min bid: $${(auction.currentBid + 1).toFixed(2)}`}
+                                        className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                                        min={auction.currentBid + 1}
+                                        step="0.01"
+                                        required
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading || !bidAmount || parseFloat(bidAmount) <= auction.currentBid}
+                                        className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isLoading ? 'Bidding...' : 'Place Bid'}
+                                    </button>
+                                </div>
+                                {error && (
+                                    <p className="text-red-400 text-sm mt-2">{error}</p>
+                                )}
+                            </form>
+                        ) : (
+                            <div className="text-gray-400 text-sm mt-4">
+                                {isOwner ? "You can't bid on your own auction" : "This auction has ended"}
                             </div>
-                            {error && (
-                                <p className="text-red-400 text-sm">{error}</p>
-                            )}
-                        </form>
+                        )}
                     </div>
                 </div>
             </BackgroundGradient>
