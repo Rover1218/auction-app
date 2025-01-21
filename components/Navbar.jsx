@@ -82,7 +82,7 @@ export const Navbar = () => {
                     ) : (
                         <>
                             <button
-                                onClick={() => router.push('/profile')}
+                                onClick={() => router.push('../profile')}
                                 className="px-4 py-2 text-white hover:text-blue-400 transition-colors"
                             >
                                 Profile
