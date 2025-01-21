@@ -8,69 +8,97 @@ import { useRouter } from 'next/router';
 import '../styles/globals.css';
 import { Spotlight } from "../components/ui/Spotlight";
 import Head from 'next/head';
+import { MultiStepLoader as Loader } from "../components/ui/multi-step-loader";
+import { IconSquareRoundedX } from "@tabler/icons-react";
 
 const AuctionPage = () => {
     const router = useRouter();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [auctions, setAuctions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [initialLoading, setInitialLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showLoader, setShowLoader] = useState(true);  // Add this new state
+
+    const loadingStates = [
+        { text: 'Connecting to AuctionHub...' },
+        { text: 'Authenticating your session...' },
+        { text: 'Fetching available auctions...' },
+        { text: 'Processing auction data...' },
+        { text: 'Preparing your experience...' },
+        { text: 'Almost ready to show auctions...' }
+    ];
+
+    const fetchAuctions = async () => {
+        try {
+            setShowLoader(true);
+            const startTime = Date.now();
+            const token = localStorage.getItem('token');
+            const LOADING_DURATION = 4000; // Changed to 4 seconds
+
+            const response = await fetch('/api/auction', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (Array.isArray(data)) {
+                setAuctions(data);
+            } else if (data.auctions && Array.isArray(data.auctions)) {
+                setAuctions(data.auctions);
+            } else {
+                throw new Error('Invalid data format received');
+            }
+
+            // Ensure minimum 4 seconds loading time
+            const elapsedTime = Date.now() - startTime;
+            if (elapsedTime < LOADING_DURATION) {
+                await new Promise(resolve => setTimeout(resolve, LOADING_DURATION - elapsedTime));
+            }
+        } catch (err) {
+            console.error('Fetch error:', err);
+            setError(err.message || 'Failed to load auctions. Please try again later.');
+            await new Promise(resolve => setTimeout(resolve, 4000)); // Also wait 4 seconds on error
+        } finally {
+            setShowLoader(false);
+            setLoading(false);
+            setInitialLoading(false);
+        }
+    };
 
     useEffect(() => {
-        // Check authentication when component mounts
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/auth/login');
-            return;
-        }
+        const initializeApp = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                router.push('/auth/login');
+                return;
+            }
 
-        const verifyAuth = async () => {
             try {
                 const response = await fetch('/api/verify', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                if (!response.ok) {
-                    throw new Error('Not authenticated');
-                }
+                if (!response.ok) throw new Error('Not authenticated');
 
                 setIsAuthenticated(true);
-                fetchAuctions(); // Only fetch auctions if authenticated
+                await fetchAuctions();
             } catch (error) {
+                console.error('Auth error:', error);
                 localStorage.removeItem('token');
                 router.push('/auth/login');
             }
         };
 
-        verifyAuth();
+        initializeApp();
     }, [router]);
 
-    const fetchAuctions = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('/api/auction', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to fetch auctions');
-            }
-            const data = await response.json();
-            setAuctions(data);
-        } catch (err) {
-            console.error('Fetch error:', err);
-            setError(err.message || 'Failed to load auctions. Please try again later.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
     if (!isAuthenticated) {
-        return null; // or a loading spinner
+        return null;
     }
 
     return (
@@ -79,6 +107,21 @@ const AuctionPage = () => {
                 <link rel="icon" href="https://cdn.iconscout.com/icon/free/png-256/free-auction-hammer-1851279-1569181.png" />
                 <title>AuctionHub - Auctions</title>
             </Head>
+            {/* Add Loader Component */}
+            <Loader
+                loadingStates={loadingStates}
+                loading={showLoader}
+                duration={2500} // Adjusted duration to spread states across 4 seconds
+            />
+            {showLoader && (
+                <button
+                    className="fixed top-4 right-4 text-white z-[120]"
+                    onClick={() => setShowLoader(false)}
+                >
+                    <IconSquareRoundedX className="h-10 w-10" />
+                </button>
+            )}
+            {/* Rest of the UI */}
             <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 overflow-hidden">
                 <Navbar />
                 <Spotlight
@@ -90,11 +133,7 @@ const AuctionPage = () => {
                         words="Available Auctions"
                         className="text-4xl font-bold text-white mb-8 text-center"
                     />
-                    {loading ? (
-                        <div className="flex justify-center items-center h-64">
-                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                        </div>
-                    ) : error ? (
+                    {error ? (
                         <div className="text-red-500 text-center p-4 bg-red-100 rounded-lg">
                             Error: {error}
                         </div>
