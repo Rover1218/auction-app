@@ -1,0 +1,84 @@
+.container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.formCard {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    transition: transform 0.2s;
+}
+
+.formCard:hover {
+    transform: translateY(-5px);
+}
+
+.title {
+    color: #2c3e50;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.input:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.button {
+    width: 100%;
+    padding: 12px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 1rem;
+}
+
+.button:hover {
+    background: #2980b9;
+}
+
+.button:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.error {
+    color: #e74c3c;
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.link {
+    color: #3498db;
+    text-decoration: none;
+    text-align: center;
+    display: block;
+    margin-top: 1rem;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
