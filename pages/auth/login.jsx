@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Modal from '../../components/Modal';
+import { Spotlight } from "../../components/ui/Spotlight";
 
 export default function Login() {
     const router = useRouter();
@@ -38,7 +39,8 @@ export default function Login() {
 
             const data = await res.json();
             if (data.token) {
-                localStorage.setItem('auth_token', data.token);
+                localStorage.setItem('token', data.token); // Changed from auth_token to token
+                window.dispatchEvent(new Event('authChange')); // Add this line to trigger navbar update
                 setModal({
                     isOpen: true,
                     title: 'Welcome Back!',
@@ -69,7 +71,13 @@ export default function Login() {
     };
 
     return (
-        <>
+        <div className="relative min-h-screen w-full overflow-hidden">
+            <div className="pointer-events-none absolute inset-0">
+                <Spotlight
+                    className="-top-40 left-0 md:left-60 animate-spotlight"
+                    fill="white"
+                />
+            </div>
             <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
                 <div className="w-full max-w-md bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 shadow-xl border border-slate-700 relative overflow-hidden">
                     {/* Decorative elements */}
@@ -131,11 +139,11 @@ export default function Login() {
                             </div>
 
                             <button
-                                className="w-full px-8 py-3.5 rounded-full relative bg-gradient-to-r from-teal-500 to-blue-500 text-white font-medium hover:shadow-2xl hover:shadow-teal-500/10 transition duration-200 border-0 disabled:opacity-50 disabled:cursor-not-allowed group"
+                                className="w-full px-8 py-3.5 rounded-full relative bg-slate-700 text-white hover:shadow-2xl hover:shadow-white/[0.1] transition duration-200 border border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed group"
                                 type="submit"
                                 disabled={loading}
                             >
-                                <div className="absolute inset-x-0 h-px w-1/2 mx-auto -top-px shadow-2xl bg-gradient-to-r from-transparent via-white to-transparent opacity-50" />
+                                <div className="absolute inset-x-0 h-px w-1/2 mx-auto -top-px shadow-2xl bg-gradient-to-r from-transparent via-teal-500 to-transparent" />
                                 <span className="relative z-20 flex items-center justify-center">
                                     {loading && (
                                         <svg
@@ -186,6 +194,6 @@ export default function Login() {
                 message={modal.message}
                 type={modal.type}
             />
-        </>
+        </div>
     );
 }
